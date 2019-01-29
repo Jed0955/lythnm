@@ -20,7 +20,7 @@ class LatestRecord(models.Model):
 
 class Price(models.Model):
     date = models.DateField(verbose_name=_('数据日期'))
-    goods = models.ForeignKey(Goods, verbose_name=_('商品'))
-    category = models.ForeignKey(Category, verbose_name=_('商品类型'))
-    unit = models.ForeignKey(Unit, verbose_name=_('单位'))
+    goods = models.ForeignKey(Goods, verbose_name=_('商品'), on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, verbose_name=_('商品类型'), on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, verbose_name=_('单位'), on_delete=models.CASCADE)
     price = models.FloatField(verbose_name=_('均价'))
