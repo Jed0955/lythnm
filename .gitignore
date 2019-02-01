@@ -55,6 +55,7 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+*.sql
 
 # Flask stuff:
 instance/
@@ -106,3 +107,6 @@ venv.bak/
 
 # pycharm
 .idea/
+
+# log
+*.txt

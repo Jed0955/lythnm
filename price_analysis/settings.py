@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import logging
+from datetime import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -119,3 +121,67 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(levelname)s %(asctime)s %(pathname)s %(filename)s %(module)s %(funcName)s %(lineno)d: %(message)s'
+        },
+        'verbose': {
+            'format': '%(levelname)s : %(asctime)s %(pathname)s %(lineno)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s : %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': logging.INFO,
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'prod': {
+            'level': logging.ERROR,
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log_prod.txt'),
+            'formatter': 'simple'
+        },
+        'email': {
+            'level': logging.ERROR,
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': logging.INFO,
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log.txt'),
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        '*': {
+            'handlers': ['file', 'console', 'prod'],
+            'level': logging.DEBUG,
+            'propagate': False
+        },
+        'django': {
+            'handlers': ['console', 'email', 'prod'],
+            'level': logging.INFO,
+            'propagate': True,
+        },
+        'spider': {
+            'handlers': ['file', 'console', 'email', 'prod'],
+            'level': logging.INFO,
+            'propagate': True
+        },
+    }
+}
