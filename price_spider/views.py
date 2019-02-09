@@ -66,24 +66,29 @@ def spider_price_data(html):
         goods_price = Price()
         if len(items) in (4, 5):
             price= clean_blank(items[-1].text)
-            try:
-                goods_name = clean_blank(items[-4].text)
-                goods_price.goods = check_get_goods(goods_name)
-                goods_price.category = check_get_category(clean_blank(items[-3].text))
-                goods_price.unit = check_get_unit(clean_blank(items[-2].text))
-                goods_price.price = float(price)
-                goods_price.date = date_date
-            except ValueError as ex:
-                LOGGER.error('数据转换异常：' + goods_name + ' | ' + str(ex))
+            goods_name = clean_blank(items[-4].text)
+            goods = check_get_goods(goods_name)
+            if goods:
+                try:
+
+                    goods_price.goods = goods
+                    goods_price.category = check_get_category(clean_blank(items[-3].text))
+                    goods_price.unit = check_get_unit(clean_blank(items[-2].text))
+                    goods_price.price = float(price)
+                    goods_price.date = date_date
+                except ValueError as ex:
+                    LOGGER.error('数据转换异常：' + goods_name + ' | ' + str(ex))
+                else:
+                    goods_price_list.append(goods_price)
             else:
-                goods_price_list.append(goods_price)
+                LOGGER.error('未识别的商品名称：' +  goods_name)
         else:
-            LOGGER.error('数据格式未能识别')
+            LOGGER.error('未识别的数据格式')
     if goods_price_list:
         Price.objects.bulk_create(goods_price_list)
         LOGGER.info('抓取' + str_date + '数据共计' + str(len(goods_price_list)) + '条')
     else:
-        LOGGER.error('未能抓取到数据')
+        LOGGER.error('未抓取到数据')
 
 
 # 清洗空白（\r、\n、\t和空格）
@@ -123,7 +128,7 @@ def load_base_data():
 
 # 检查获取商品
 def check_get_goods(goods_name):
-    if goods_name:
+    if goods_name and is_all_chinese(goods_name):
         if goods_name not in GOODS_DICT:
             goods = Goods(name=goods_name)
             goods.save()
@@ -135,7 +140,7 @@ def check_get_goods(goods_name):
 
 # 检查获取商品类型
 def check_get_category(category_name):
-    if category_name:
+    if category_name and is_all_chinese(category_name):
         if category_name not in CATEGORY_DICT:
             category = Category(name=category_name)
             category.save()
@@ -147,7 +152,7 @@ def check_get_category(category_name):
 
 # 检查获取单位
 def check_get_unit(unit_name):
-    if unit_name:
+    if unit_name and is_all_chinese(unit_name):
         if unit_name not in UNIT_DICT:
             unit = Unit(name=unit_name)
             unit.save()
@@ -168,3 +173,10 @@ def check_update_record_date(current_record_date):
             LATEST_RECORD.date = current_record_date
             LATEST_RECORD.save()
 
+
+# 检验是否全是中文字符
+def is_all_chinese(s):
+    for c in s:
+        if not ('\u4e00' <= c <= '\u9fa5'):
+            return False
+    return True
